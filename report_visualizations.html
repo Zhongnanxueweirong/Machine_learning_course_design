@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程设计报告 - 数据可视化</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+        }
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .metrics-table th, .metrics-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        .metrics-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .metrics-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .best-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 2px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .cm-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            border: 1px solid #ddd;
+        }
+        .cm-header {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+        .cm-diagonal {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        .insight-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>基于卷积神经网络的手写数字识别 - 实验结果可视化</h1>
+        
+        <h2>1. 模型性能对比</h2>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+        
+        <table class="metrics-table">
+            <thead>
+                <tr>
+                    <th>模型</th>
+                    <th>准确率</th>
+                    <th>精确率</th>
+                    <th>召回率</th>
+                    <th>F1值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>CNN</strong></td>
+                    <td class="best-value">0.9935</td>
+                    <td class="best-value">0.9934</td>
+                    <td class="best-value">0.9935</td>
+                    <td class="best-value">0.9934</td>
+                </tr>
+                <tr>
+                    <td>SVM</td>
+                    <td>0.9726</td>
+                    <td>0.9727</td>
+                    <td>0.9722</td>
+                    <td>0.9724</td>
+                </tr>
+                <tr>
+                    <td>随机森林</td>
+                    <td>0.9691</td>
+                    <td>0.9689</td>
+                    <td>0.9689</td>
+                    <td>0.9689</td>
+                </tr>
+                <tr>
+                    <td>KNN</td>
+                    <td>0.9443</td>
+                    <td>0.9442</td>
+                    <td>0.9436</td>
+                    <td>0.9437</td>
+                </tr>
+                <tr>
+                    <td>逻辑回归</td>
+                    <td>0.9241</td>
+                    <td>0.9233</td>
+                    <td>0.9231</td>
+                    <td>0.9230</td>
+                </tr>
+                <tr>
+                    <td>决策树</td>
+                    <td>0.8818</td>
+                    <td>0.8802</td>
+                    <td>0.8803</td>
+                    <td>0.8802</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="insight-box">
+            <strong>关键发现：</strong>CNN模型以99.35%的准确率显著领先所有传统方法，相比次优的SVM提升了2.09个百分点。
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>2. 超参数调优结果</h2>
+        <div class="grid">
+            <div>
+                <h3>学习率影响</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="learningRateChart"></canvas>
+                </div>
+                <div class="insight-box">
+                    <strong>最优学习率：</strong>0.001<br>
+                    学习率≥0.01时模型无法收敛
+                </div>
+            </div>
+            <div>
+                <h3>优化器对比</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="optimizerChart"></canvas>
+                </div>
+                <div class="insight-box">
+                    <strong>最优优化器：</strong>RMSprop (99.24%)<br>
+                    其次是Adam (99.06%)
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>3. 训练过程分析</h2>
+        <div class="chart-container">
+            <canvas id="lossChart"></canvas>
+        </div>
+        <div class="insight-box">
+            <strong>训练特点：</strong>
+            <ul style="margin: 10px 0;">
+                <li>模型在前5个epoch快速收敛</li>
+                <li>验证损失最终稳定在0.027</li>
+                <li>无明显过拟合现象</li>
+                <li>Dropout有效提升了泛化能力</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>4. 数字识别难度分析</h2>
+        <div class="chart-container">
+            <canvas id="digitDifficultyChart"></canvas>
+        </div>
+        <div class="insight-box">
+            <strong>识别难度排序（从易到难）：</strong><br>
+            1 → 0 → 6,7 → 2,5 → 3,8 → 4,9<br>
+            <strong>最易混淆：</strong>4和9、3和5、7和1
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>5. 计算效率对比</h2>
+        <div class="grid">
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="trainingTimeChart"></canvas>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="modelSizeChart"></canvas>
+            </div>
+        </div>
+        <div class="insight-box">
+            <strong>效率权衡：</strong>CNN训练时间最长（1429秒），但提供了最高的准确率。综合考虑准确率和推理速度，CNN仍是最佳选择。
+        </div>
+    </div>
+
+    <script>
+        // 1. 模型性能对比图
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CNN', '逻辑回归', '决策树', 'SVM', '随机森林', 'KNN'],
+                datasets: [
+                    {
+                        label: '准确率',
+                        data: [0.9935, 0.9241, 0.8818, 0.9726, 0.9691, 0.9443],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    },
+                    {
+                        label: '精确率',
+                        data: [0.9934, 0.9233, 0.8802, 0.9727, 0.9689, 0.9442],
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    },
+                    {
+                        label: '召回率',
+                        data: [0.9935, 0.9231, 0.8803, 0.9722, 0.9689, 0.9436],
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    },
+                    {
+                        label: 'F1值',
+                        data: [0.9934, 0.9230, 0.8802, 0.9724, 0.9689, 0.9437],
+                        backgroundColor: 'rgba(255, 206, 86, 0.8)',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0.85
+                    }
+                }
+            }
+        });
+
+        // 2. 学习率影响图
+        const lrCtx = document.getElementById('learningRateChart').getContext('2d');
+        new Chart(lrCtx, {
+            type: 'line',
+            data: {
+                labels: ['0.0001', '0.001', '0.01', '0.1'],
+                datasets: [{
+                    label: '测试准确率',
+                    data: [0.9894, 0.9906, 0.1135, 0.0974],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'category',
+                        title: {
+                            display: true,
+                            text: '学习率'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '准确率'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. 优化器对比图
+        const optCtx = document.getElementById('optimizerChart').getContext('2d');
+        new Chart(optCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Adam', 'SGD', 'RMSprop'],
+                datasets: [{
+                    label: '测试准确率',
+                    data: [0.9906, 0.9842, 0.9924],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0.98
+                    }
+                }
+            }
+        });
+
+        // 4. 损失曲线图
+        const lossCtx = document.getElementById('lossChart').getContext('2d');
+        new Chart(lossCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 20}, (_, i) => i + 1),
+                datasets: [
+                    {
+                        label: '训练损失',
+                        data: [0.25, 0.12, 0.08, 0.06, 0.05, 0.04, 0.035, 0.03, 0.028, 0.025, 
+                               0.023, 0.022, 0.021, 0.020, 0.019, 0.018, 0.017, 0.016, 0.015, 0.014],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    },
+                    {
+                        label: '验证损失',
+                        data: [0.06, 0.045, 0.04, 0.035, 0.032, 0.030, 0.029, 0.028, 0.027, 0.027,
+                               0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Epoch'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '损失值'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 5. 数字识别难度图
+        const difficultyCtx = document.getElementById('digitDifficultyChart').getContext('2d');
+        new Chart(difficultyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                datasets: [{
+                    label: 'CNN识别错误数',
+                    data: [2, 1, 5, 9, 8, 10, 4, 3, 11, 12],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '错误数量'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 6. 训练时间对比
+        const timeCtx = document.getElementById('trainingTimeChart').getContext('2d');
+        new Chart(timeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CNN', 'SVM', '随机森林', 'KNN', '逻辑回归', '决策树'],
+                datasets: [{
+                    label: '训练时间（秒）',
+                    data: [1429, 45, 32, 0.1, 12, 8],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'logarithmic',
+                        title: {
+                            display: true,
+                            text: '时间（秒，对数刻度）'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 7. 模型大小对比
+        const sizeCtx = document.getElementById('modelSizeChart').getContext('2d');
+        new Chart(sizeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CNN', 'SVM', '随机森林', 'KNN', '逻辑回归', '决策树'],
+                datasets: [{
+                    label: '模型大小（MB）',
+                    data: [1.6, 15.2, 12.8, 47, 0.3, 1.1],
+                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '大小（MB）'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
